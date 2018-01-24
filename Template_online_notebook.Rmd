@@ -1,12 +1,12 @@
-## Author: (your name)     
+## Morgan Southgate    
 ## Ecological Genomics:   
 
 ### Overall Description of notebook      
 
-fill in your description here!
+This notebook will catalog my entire work throughout the semester, including all my relevant code, results, and interpretations
 
 
-### Date started: (year-month-day)   
+### Date started: January 24, 2018   
 ### Date end:   (year-month-day)    
 
 ### Philosophy   
@@ -90,6 +90,12 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 ------
 <div id='id-section1'/>
 ### Page 1: 2018-01-24. Notes on using Github, Rmarkdown, and the UNIX command-line
+
+Today, we created our github repos for the course, and began our notebooks. 
+
+Other goals for today: 
+* publish our notebooks
+* log into the UNIX server
 
 
 ------
