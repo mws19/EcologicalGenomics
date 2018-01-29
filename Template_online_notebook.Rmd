@@ -28,7 +28,7 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 ### Table of contents for 60 entries (Format is *Page: Date(with year-month-day). Title*)        
 * [Page 1: 2018-01-24](#id-section1). Intro to Github, RMarkdown, and UNIX command-line
 * [Page 2: 2018-01-29](#id-section2). Practice logging into UNIX and basic coding.
-* [Page 3:](#id-section3).
+* [Page 3:2018-01-29](#id-section3).Working with RNA-Seq Data
 * [Page 4:](#id-section4).
 * [Page 5:](#id-section5).
 * [Page 6:](#id-section6).
@@ -105,7 +105,42 @@ Other goals for today:
 Logged into UNIX server using Putty, accessed mydata, viewed cols_data.txt
 ------
 <div id='id-section3'/>
-### Page 3:
+### Page 3: 2018-01-29. Working with RNA-Seq Data. 
+
+Goals: 
+1. Learn about the bull headed beetle (*Orthophagus taurus*)
+2. Understand pipeline for processing RNA-Seq data
+3. Learn how to write bash scripts and write scripts to process files in batches
+4. Visualize and interpret Illumina data quality
+
+**Bull headed beetle
+- Native to mediterranean, deliberately introduced to Australia for pest control
+- Accidentally introduced to eastern US from unknown origin in 1970s
+- Experimental design
+*** Three populations reared in common garden experiment, from native range, Italy (IT), western australia (WA), and North Carolina (NC)
+*** Four developmental stages, both sexes (three individuals per sex)
+*** 3 pops x 4 developmental stages x 2 sexes x 3 individuals = 72 samples
+*** Sequenced on about 7 lanes of Illumina HiSeq 2500
+
+** The pipeline
+1. Visualize, Clean, Visualize
+2. Download reference transcriptome assembly
+3. Map (aka align) cleaned reads from each sample to the reference assembly to generate sequence alignemnt files (Program: bwa, Input: fastq, Output: .sam)
+4. Extract read count data from .sam files
+5. Assemble a data matrix of counts for each gene for each sample
+
+***Visualize,Clean,Visualize
+- Access shared directory through pbio381 server (cd /data/project_data/beetles/rawdata/)
+- Working with WA_PP1_M1* (zcat WA_PP1_M1_CCGTCC_L003_R1_001.fastq.gz | head -n4)
+- Quality score: @@@DDDDDA?DCFEGGEHHHGGEGGII+C1?EHBHGG##0:BDDFGIIDHG1=CGIGGGEHB3?D>CCAA;?:>>?BA@CB@A>ACCCBBB#+8?BBC##
+- Clean file using: fastqc WA_PP1_M1_CCGTCC_L003_R1_001.fastq.gz -o ~/mydata
+- Move html file generated to computer using WINSCP
+- Opened fastq file in html document
+- 
+
+
+- 
+
 ------
 <div id='id-section4'/>
 ### Page 4:
