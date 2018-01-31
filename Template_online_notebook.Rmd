@@ -29,7 +29,7 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 1: 2018-01-24](#id-section1). Intro to Github, RMarkdown, and UNIX command-line
 * [Page 2: 2018-01-29](#id-section2). Practice logging into UNIX and basic coding.
 * [Page 3:2018-01-29](#id-section3).Working with RNA-Seq Data
-* [Page 4:](#id-section4).
+* [Page 4:2018-01-31](#id-section4). Continuing to work with RNA-Seq Data
 * [Page 5:](#id-section5).
 * [Page 6:](#id-section6).
 * [Page 7:](#id-section7).
@@ -136,14 +136,69 @@ Goals:
 - Clean file using: fastqc WA_PP1_M1_CCGTCC_L003_R1_001.fastq.gz -o ~/mydata
 - Move html file generated to computer using WINSCP
 - Opened fastq file in html document
-- 
-
-
-- 
 
 ------
 <div id='id-section4'/>
-### Page 4:
+### Page 4: 2018-01-31. Continuing to work with RNA-Seq Data
+
+1. Make directories "scripts" and "cleanreads"
+2. Copy bash script over to ~/scripts directory 
+
+```
+cp /data/scripts/trim_example.sh ~/scripts/ # copies the script to your home scripts dir
+vim trim_example.sh                       # open the script with vim to edit
+```
+
+```
+#!/bin/bash
+      java -classpath /data/popgen/Trimmomatic-0.33/trimmomatic-0.33.jar org.usadellab.trimmomatic.TrimmomaticPE \  
+                -threads 1 \ 
+                -phred33 \
+                 /data/project_data/beetles/rawdata/WA_PP1_M1_CCGTCC_L003_R1_00_R1.fastq.gz \
+                 /data/project_data/beetles/rawdata/WA_PP1_M1_CCGTCC_L003_R1_00_R2.fastq.gz \
+                 ~/cleanreads/"WA_PP1_M1_CCGTCC_L003_R1_001_clean_paired.fa" \
+                 ~/cleanreads/"WA_PP1_M1_CCGTCC_L003_R1_001_clean_unpaired.fa" \
+                 ~/cleanreads/"WA_PP1_M1_CCGTCC_L003_R1_002_clean_paired.fa" \
+                 ~/cleanreads/"WA_PP1_M1_CCGTCC_L003_R1_002_clean_unpaired.fa" \
+                 ILLUMINACLIP:/data/popgen/Trimmomatic-0.33/adapters/TruSeq3-PE.fa:2:30:10 \
+                 LEADING:28 \
+                TRAILING:28 \
+                SLIDINGWINDOW:6:28 \
+                HEADCROP:12 \
+                MINLEN:35 \
+```
+Now run the script
+ ```
+ chmod u+x trim_example.sh    # makes the script "executable" by the "user"
+./trim_example.sh           # executes the script, or bash trim_example.sh
+```
+Output: 
+```
+TrimmomaticPE: Started with arguments: -threads 1 -phred33 /data/project_data/beetles/rawdata/WA_PP1_M1_CCGTCC_L003_R1_001.fastq.gz /data/project_data/beetles/rawdata/WA_PP1_M1_CCGTCC_L003_R2_001.fastq.gz /users/m/s/msouthga/cleanreads/WA_PP1_M1_CCGTCC_L003_R1_clean-paired.fa /users/m/s/msouthga/cleanreads/WA_PP1_M1_CCGTCC_L003_R1_clean_unpaired.fa /users/m/s/msouthga/cleanreads/WA_PP1_M1_CCGTCC_L003_R2_clean_paired.fa /users/m/s/msouthga/cleanreads/WA_PP1_M1_CCGTCC_L003_R2_clean_unpaired.fa ILLUMINACLIP:/data/popgen/Trimmomatic-0.33/adapters/TruSeq3-PE.fa:2:30:10 LEADING:28 TRAILING:28 SLIDINGWINDOW:6:28 HEADCROP:12 MINLEN:35
+Using PrefixPair: 'TACACTCTTTCCCTACACGACGCTCTTCCGATCT' and 'GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT'
+ILLUMINACLIP: Using 1 prefix pairs, 0 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+```
+Run FASTQC on our clean and paired reads, and store in fastqc directory
+```
+fastqc ~/cleanreads/WA_PP1_M1_CCGTCC_L003_R1_clean-paired.fa -o ~/fastqc/
+
+```
+Map your reads to the reference transcriptome
+- First step is to index the reference transcriptome - we've done the step already, but here's the command: 
+
+```
+$ bwa index /data/project_data/beetles/reference/OTAU.fna
+```
+- make a new directory sam in mydata
+- Our first step is to map the clean reads using the bwa mem command
+```
+bwa mem /data/project_data/beetles/reference/OTAU.fna ~/cleanreads/WA_PP1_M1_CCGTCC_L003_R1_clean-paired.fa ~/cleanreads/WA_PP1_M1_CCGTCC_L003_R2_clean_paired.fa > WA_PP1_M1_bwamem.sam
+
+```
+
+
+
+
 ------
 <div id='id-section5'/>
 ### Page 5:
