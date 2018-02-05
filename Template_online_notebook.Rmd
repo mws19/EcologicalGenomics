@@ -30,7 +30,7 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 2: 2018-01-29](#id-section2). Practice logging into UNIX and basic coding.
 * [Page 3:2018-01-29](#id-section3).Working with RNA-Seq Data
 * [Page 4:2018-01-31](#id-section4). Continuing to work with RNA-Seq Data
-* [Page 5:](#id-section5).
+* [Page 5: 2018-02-05](#id-section5). Continuing to work with the RNA-Seq Data
 * [Page 6:](#id-section6).
 * [Page 7:](#id-section7).
 * [Page 8:](#id-section8).
@@ -201,7 +201,34 @@ bwa mem /data/project_data/beetles/reference/OTAU.fna ~/cleanreads/WA_PP1_M1_CCG
 
 ------
 <div id='id-section5'/>
-### Page 5:
+### Page 5: Continuing to work with RNA-Seq Data
+navigate to mydata/sam
+```
+ tail -n 100 WA_PP1_M1_bwamem.sam > tail.sam   #take 100 last columns in file
+ vim tail.sam   #view tail.sam file
+ : set nowrap
+```
+A SAM file is a tab delimited text file that stores information about the alignment of reads in a FASTQ file to a reference gnome or transcriptome. For each read in a FASTQ file, there's a line in the SAM file that includes: - the read (aka query name)
+- a FLAG (number with info about mapping success and orientation and whether the read is the left or right read)
+ * Check FLAG scores using BROAD institue page (https://broadinstitute.github.io/picard/explain-flags.html)
+- The reference sequence name to which the read mapped (if not mapped gets a *)
+- The mapping quality (Phred-scaled)
+- a CIGAR string that gives alignment information (how many bases Match, location of Insertion or Deletion)
+-an '=', mate position, inferred insert size(columns 7,8,9)
+- the query sequence and Phred-scaled quality from the FASTQ file (columsn 10 and 11)
+- 
+
+```
+grep -c XT:A:U WA_PP1_M1_bwamem.sam  #use general expressions to search for specific term
+
+samtools flagstat WA_PP1_M1_bwamem.sam
+
+cp /data/scripts/countxpression_PE.py ~/myscripts  #move countxpression_PE.py file from shared directory to myscripts
+
+vim countxpression_PE.py  # visualize file
+
+```
+
 ------
 <div id='id-section6'/>
 ### Page 6:
