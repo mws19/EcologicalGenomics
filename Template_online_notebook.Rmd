@@ -31,10 +31,10 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 3:2018-01-29](#id-section3).Working with RNA-Seq Data
 * [Page 4:2018-01-31](#id-section4). Continuing to work with RNA-Seq Data
 * [Page 5: 2018-02-05](#id-section5). Continuing to work with the RNA-Seq Data
-* [Page 6:](#id-section6).
-* [Page 7:](#id-section7).
-* [Page 8:](#id-section8).
-* [Page 9:](#id-section9).
+* [Page 6:2018-02-07](#id-section6).Working with DESeq2
+* [Page 7: 2018-02-12](#id-section7).Continuing to work with DESeq2. 
+* [Page 8: 2018-02-14](#id-section8). FInishing work with DESeq2. 
+* [Page 9: 2018-02021](#id-section9).DESeq2 one more time!
 * [Page 10:](#id-section10).
 * [Page 11:](#id-section11).
 * [Page 12:](#id-section12).
@@ -231,16 +231,40 @@ vim countxpression_PE.py  # visualize file
 
 ------
 <div id='id-section6'/>
-### Page 6:
+### Page 6: 2018-02-07. Working with DESeq2. 
+Working with R on personal machine using: 
+- counts matrix
+-compiled table of uniquely mapped reads to each gene from each sample
+
+DESeq2 - can rerun with bwa align, get python script to work with mem, or choose different way. 
+1) start with bwa align. Use WinSCP to transfer file into EcologicalGenomics/UNIXData/Feb7
+
+work recorded in Feb7_DESeq2.R
 ------
 <div id='id-section7'/>
-### Page 7:
+### Page 7: Continuing to work with DESeq2. 
 ------
 <div id='id-section8'/>
-### Page 8:
+### Page 8: Finishing work with DESeq2. 
+
+- Made a heatmap comparing expression levels
+- Look at individual genes by devstage and sex using PCA
+
+-GO enrichment using MWU test
 ------
 <div id='id-section9'/>
-### Page 9:
+### Page 9: One more day with DESeq2!
+Goals: 
+-1) Explore how we can use DESeq2 and other packages in R to test for differences in gene expression of different models
+3) To identify co-expression modules using WCGNA
+
+- IT population didn't provide all developmental stages - so missing from some of this analysis
+
+- made heat map of significant expression differences between WA_PP1_F and NC_PP1_F (also with corresponding male samples)
+
+- WGNCA = weighted gene network correlation analysis, performed using package WGNCA. 
+
+_ brightest clusters and strongest correlations shown in developmental stage
 ------
 <div id='id-section10'/>
 ### Page 10:
