@@ -35,7 +35,7 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 7: 2018-02-12](#id-section7).Continuing to work with DESeq2. 
 * [Page 8: 2018-02-14](#id-section8). FInishing work with DESeq2. 
 * [Page 9: 2018-02021](#id-section9).DESeq2 one more time!
-* [Page 10:](#id-section10).
+* [Page 10: 2018-02-26](#id-section10). Intro to Population Genomics: SNP and genotype calling
 * [Page 11:](#id-section11).
 * [Page 12:](#id-section12).
 * [Page 13:](#id-section13).
@@ -267,7 +267,27 @@ Goals:
 _ brightest clusters and strongest correlations shown in developmental stage
 ------
 <div id='id-section10'/>
-### Page 10:
+### Page 10: Intro to population genomics - SNP and genotype calling
+Samtools: a powerful tool for manipulating sam files (and their binary equivalent, bam), and for piling up those reads across individuals to call SNPs and genotypes
+
+Use samtools to: 
+1. convert from sam >> bam
+2. check mapping stats
+3. Fix reads that are no longer paired
+4. Remove duplicates
+5. Index for computational efficiency
+6. Use bcftools to call SNPS and genotypes
+
+navigate to server my data/sam
+open sam file
+
+in bash: file saved as samtobam.sh in mydata/sam
+- make bash file executable using chmod o+x
+- go into screen - used to create a connection between terminal and computer, so that you can disconnect from terminal and come back later, or run a script in the background
+- run bash script using bash samtobam.sh
+- use ctrl + a + d command to detach from script
+
+
 ------
 <div id='id-section11'/>
 ### Page 11:
