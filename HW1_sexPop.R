@@ -83,7 +83,7 @@ head(res_pop.F)
 
 
 
-################ Manhattan Plot ########################### 
+################ MA Plot ########################### 
 plotMA(res_pop.F, main="WA vs NC Females", ylim=c(-2,2))
 abline(h=c(-1,1), col="blue",lwd=2)
 
@@ -191,7 +191,7 @@ summary(res_pop.M)
 # [1] see 'cooksCutoff' argument of ?results
 # [2] see 'independentFiltering' argument of ?results
 
-############### Manhattan PLot ##################### 
+############### MA PLot ##################### 
 plotMA(res_pop.M, main="WA vs NC Males", ylim=c(-2,2))
 abline(h=c(-1,1), col="blue",lwd=2)
 

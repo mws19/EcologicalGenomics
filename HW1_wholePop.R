@@ -84,7 +84,7 @@ summary(res_pop)
 # [1] see 'cooksCutoff' argument of ?results
 # [2] see 'independentFiltering' argument of ?results
 
-##########################Manhattan Plot ############## 
+##########################MA Plot ############## 
 plotMA(res_pop, main="WA vs NC", ylim=c(-2,2))
 abline(h=c(-1,1), col="blue",lwd=2)
 
