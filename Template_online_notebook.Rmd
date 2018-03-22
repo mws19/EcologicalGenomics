@@ -45,8 +45,8 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 12: 2018-03-05](#id-section12).Admixture and Population Structure
 * [Page 13: 2018-03-07](#id-section13).Admixture & Population Structure cont.
 * [Page 14: 2018-03-08](#id-section14). R Script for HW1 - Differential Gene Expression 
-* [Page 15:](#id-section15).
-* [Page 16:](#id-section16).
+* [Page 15:2018-03-19](#id-section15). Admixture & Population Structure Continued
+* [Page 16: 2018-03-21](#id-section16). Testing Selection Using Fst Outlier Analysis
 * [Page 17:](#id-section17).
 * [Page 18:](#id-section18).
 * [Page 19:](#id-section19).
@@ -369,10 +369,17 @@ _ brightest clusters and strongest correlations shown in developmental stage
 ------
 <div id='id-section10'/>
 ### Page 10: Intro to population genomics - SNP and genotype calling
+Goals: 
+1. Take sam files and extract mapping stats and read depth coverage
+2. Convert sam to binary (bam) format, and use samtools/bcftools for SNP detection
+3. Learn Variant Call Format (vcf) for storing SNP genotypes
+4. Begin to evaluate filtering strategies for determining high quality SNPs for downsterm analyses
+
+First: call SNPs using the program samtools (manual can be found [here](http://www.htslib.org/doc/samtools.html)
+
 Samtools: a powerful tool for manipulating sam files (and their binary equivalent, bam), and for piling up those reads across individuals to call SNPs and genotypes
 
-
-Use samtools to: 
+For individual sam files from RNASeq mapping- Use samtools to: 
 1. convert from sam >> bam
 2. check mapping stats
 3. Fix reads that are no longer paired
@@ -420,7 +427,8 @@ in bash: file saved as samtobam.sh in mydata/sam
  
  - make new folder called myresults in home directory, to receive output of analysis from shared directory
  - vcftools: --command format
-------
+ 
+----------
 <div id='id-section12'/>
 ### Page 12: Admixture & Population Structure
 
@@ -512,13 +520,84 @@ vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.
 
 ------
 <div id='id-section15'/>
-### Page 15:
+### Page 15: Admixture & Population Structure Continued
+Goals: 
+- Plot our ancestry assignments from ADMIXTURE analysis for different levels of K
+- Compare ADMIXTURE results to multivariate ordination techniques such as PCA to detect population structure
+
+1. Move beetle.spid file & beetle.pop file over to ~/myscripts
+2. Check beetle.spid file & vcf2geno.sh file in bash 
+```
+vim beetle.spid
+vim vcf2geno.sh
+```
+run vcf2geno.sh using bash
+
+```
+bash vcf2geno.sh
+```
+
+output file is out.recode.vcf.geno, composed of matrix of 4 numbers (REf= A, Alt = T)
+- 0 = AA
+- 1 = AT
+- 2 = TT
+- 9 = ""
+
+Next: check ADMIX.sh file using vim
+- functions as a for loop, running through 1-10 K values
+- using 10 groups for cross validation statistic
+- takes out.recode.vcf.geno file, for each value of K
+- searches for CV values and outputs it as .txt file
+
+run ADMIX.sh file using bash
+output is CV errors for each K value
+```
+[msouthga@pbio381 myresults]$ cat chooseK.txt
+log10.out:CV error (K=10): 0.74078
+log1.out:CV error (K=1): 0.44089
+log2.out:CV error (K=2): 0.43635
+log3.out:CV error (K=3): 0.44473
+log4.out:CV error (K=4): 0.47987
+log5.out:CV error (K=5): 0.51791
+log6.out:CV error (K=6): 0.55534
+log7.out:CV error (K=7): 0.58280
+log8.out:CV error (K=8): 0.62599
+log9.out:CV error (K=9): 0.66978
+```
+Choose K values 2-4
+
+.P = allele fragements
+.Q = ancestry coefficeints
+.log = logged output
+
+NEXT: move .Q files to home computer, start new R script (PopStructureOTAU_DP10GP95.R)
+
+
+
 ------
 <div id='id-section16'/>
-### Page 16:
+### Page 16:Testing Selection Using Fst outlier analysis
+- Using the program Bayescan to test for SNPS with very high Fst, indicative of the action of diversifying selection and local adaptation
+- Estimates two key parameters: 
+- Most important parameter is -pr_odds: sets the prior probability on the odds that a given SNP is neutral vs. under selection
+
+- For class analysis: take 10 threads values
+
+
+
+
+
+
+
 ------
 <div id='id-section17'/>
-### Page 17:
+### Page 17: 
+
+
+
+
+
+
 ------
 <div id='id-section18'/>
 ### Page 18:
