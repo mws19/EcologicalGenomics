@@ -40,14 +40,14 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 7: 2018-02-12](#id-section7).Continuing to work with DESeq2. 
 * [Page 8: 2018-02-14](#id-section8). FInishing work with DESeq2. 
 * [Page 9: 2018-02021](#id-section9).DESeq2 one more time!
-* [Page 10: 2018-02-26](#id-section10). Intro to Population Genomics: SNP and genotype calling
-* [Page 11:2018-02-28](#id-section11).SNP and genotype calling continued
+* [Page 10: 2018-02-26](#id-section10). Population Genomics 1: Intro to SNP and genotype calling
+* [Page 11:2018-02-28](#id-section11).Population Genomics 2: Diversity and Site Frequency Spectrum (SFS) 
 * [Page 12: 2018-03-05](#id-section12).Admixture and Population Structure
-* [Page 13: 2018-03-07](#id-section13).Admixture & Population Structure cont.
+* [Page 13: 2018-03-07](#id-section13).Admixture & Population Structure Continued
 * [Page 14: 2018-03-08](#id-section14). R Script for HW1 - Differential Gene Expression 
-* [Page 15:2018-03-19](#id-section15). Admixture & Population Structure Continued
+* [Page 15: 2018-03-19](#id-section15). Admixture & Population Structure Continued
 * [Page 16: 2018-03-21](#id-section16). Testing Selection Using Fst Outlier Analysis
-* [Page 17:](#id-section17).
+* [Page 17: 2018-03-26](#id-section17). Population Genomics 7: Analyzing Fst Outlier (Bayescan) results
 * [Page 18:](#id-section18).
 * [Page 19:](#id-section19).
 * [Page 20:](#id-section20).
@@ -329,6 +329,7 @@ cp /data/scripts/countxpression_PE.py ~/myscripts  #move countxpression_PE.py fi
 vim countxpression_PE.py  # visualize file
 
 ```
+
 ------
 <div id='id-section6'/>
 ### Page 6: 2018-02-07. Working with DESeq2. 
@@ -341,9 +342,12 @@ DESeq2 - can rerun with bwa align, get python script to work with mem, or choose
 1) start with bwa align. Use WinSCP to transfer file into EcologicalGenomics/UNIXData/Feb7
 
 work recorded in Feb7_DESeq2.R
+
 ------
 <div id='id-section7'/>
 ### Page 7: Continuing to work with DESeq2. 
+
+
 ------
 <div id='id-section8'/>
 ### Page 8: Finishing work with DESeq2. 
@@ -364,11 +368,12 @@ Goals:
 - made heat map of significant expression differences between WA_PP1_F and NC_PP1_F (also with corresponding male samples)
 
 - WGNCA = weighted gene network correlation analysis, performed using package WGNCA. 
+- brightest clusters and strongest correlations shown in developmental stage
 
-_ brightest clusters and strongest correlations shown in developmental stage
 ------
 <div id='id-section10'/>
-### Page 10: Intro to population genomics - SNP and genotype calling
+### Page 10: Population Genomics 1: Intro to SNP and genotype calling - Feb 26, 2018
+
 Goals: 
 1. Take sam files and extract mapping stats and read depth coverage
 2. Convert sam to binary (bam) format, and use samtools/bcftools for SNP detection
@@ -387,22 +392,162 @@ For individual sam files from RNASeq mapping- Use samtools to:
 5. Index for computational efficiency
 6. Use bcftools to call SNPS and genotypes
 
-navigate to server my data/sam
-open sam file
+There is information in our alignments that will be important for analyzing the SNP data downstream: 
+- Position: where is the SNP located within a contig or chromosome of the reference assembly? 
+- Alleles: what are the alleles present at a given SNP? Are there only 2, or are there more? Are the single-nucleotide differences? Which SNPs are sequencing errors and which are real. 
+- Depth: How many reads cover a given SNP? How many reads were observed for each allele? 
+- Genotype QUality (GQ): How confident are we that we're calling the correct genotype (ex, AA, AT, or TT)? How can we tell a heterozygote from sequencing error? 
+navigate to server mydata/sam
+open sam folder
 
+Variant Call Format (VCF) for SNP data
+- Used as the common standard to store polymorphic sites only in a new file
+- [Here](https://github.com/samtools/hts-specs/blob/master/VCFv4.3.pdf) is the link to the description of what each field in a vcf file means
+- First step for learning how to work with vcf files is to use the program VCFTools to parse data files into just those samples and sites of interest, and calculate diversity stats on these
+- [Here](https://vcftools.github.io/man_latest.html) is the manual page for VCFTools
+- We will be using VCFTools to examine the effects of different filtering strategies on the number of SNPs that we get and their quality. 
+
+```
 in bash: file saved as samtobam.sh in mydata/sam
 - make bash file executable using chmod o+x
 - go into screen - used to create a connection between terminal and computer, so that you can disconnect from terminal and come back later, or run a script in the background
 - run bash script using bash samtobam.sh
 - use ctrl + a + d command to detach from script
+```
+* Step 1: to see if VCFtools likes our file format, and get some basic info on the number of SNPs and samples
+```
+ vcftools --vcf WA_PP1_M1.vcf
+```
+Step 2: Try filtering out positions that are likely to be errors in the sequencing or genotyping process - try to identify how many SNPs would pass each filter without changing the data file at all, and then decide what combination of filters we want to implement. 
+* Keep sites with only 2 alleles (biallelic, not multi-allelic SNPs) because when looking at within species diversity, very rare to have mutations occur at the same position
 
+```
+vcftools --vcf WA_PP1_M1.vcf --min-alleles 2 --max-alleles 2
+
+Parameters as interpreted:
+        --vcf WA_PP1_M1.vcf
+        --max-alleles 2
+        --min-alleles 2
+
+After filtering, kept 1 out of 1 Individuals
+After filtering, kept 225131 out of a possible 226131 Sites
+```
+* Genotype quality (GQ): treat genotypes below a certain (phred-scaled) likelihood threshold as "missing". Even wen the average read depth is low, the GQ scores provide useful information on the multinomial likelihood that the called genotype is correct. These are expressed in phred-scaled quantitied (GQ = -10 x log10(Probability of G)). Start with GQ threshold of 10 (90% confidence)
+
+```
+vcftools --vcf WA_PP1_M1.vcf --minGQ 10
+
+Parameters as interpreted:
+        --vcf WA_PP1_M1.vcf
+        --minGQ 10
+
+After filtering, kept 1 out of 1 Individuals
+After filtering, kept 226131 out of a possible 226131 Sites
+```
+* Missing data across individuals: get rid of sites where fewer than 50% of our samples have data
+ + Rationale: Missing data is a problem for any analysis,a nd population genetic statistics can behave oddly (ie, become biased) when a lot of individuals are msising data for a given SNP. 
+ ```
+ vcftools --vcf WA_PP1_M1.vcf --max-missing 0.5
+```
+* Minor allele count (MAC): gets rid of very rare SNPS, based on a user-defined threshold
+  + Rationale: sequencing errors are relatively common, but they tend to happen randomly and affect only 1 read at a time. Therefore, if we have a SNP that is only seen very rareely, it might be a sequencing error, and should be discarded. For us, the most liberal filters would be having a minimum of 2 copies of the minor allele present out of the total 2N copies. 
+```
+vcftools --vcf WA_PP1_M1.vcf --mac 2
+```
+* Combining filters: 
+```
+vcftools --vcf WA_PP1_M1.vcf --min-alleles 2 --max-alleles 2 --minGQ 10 --max-missing 0.5 --mac 2 
+```
+**Evaluating the influence of genotype uncertainty on inferences of genetic diversity**
+- VCFtools can also provide output in the form of many useful summary stats on a vcf file. We'd like to know how sensitive our inferences of diversity are to the range of GQ values present among SNP sites, which directly relates to how much confidence we have that a genotype has been called correctly. 
+- We can write a bash script with a for-loop to run vcftools iteratively for each of a range of GQ values. UNIX will take a continuous range of avariable and process it in a loop using curly brackets {10..25} or for a fixed set of values 10 15 20 25
+- Look at the influence of GQ filtering on the homozyogisity inferred for each individual (F). VCFtools lets us quickly calculate this using the -het option. Put it into a loop and let our bash script do the work for us. 
+
+**Reads2Snps**
+- Alternative SNP caller to samtools
+- Applied following criteria: 
+  + Minimum depth to call a genotype = 5 reads
+  + Minium posterior probability = 0.9
+- SNPs that didn't meet the criteria were flagged as unres (unresolved) and set to missing data in the vcf file
+- Loci that showed evidence of paralogy flagged as para
 
 ------
 <div id='id-section11'/>
-### Page 11: SNP and genotype calling continued
+### Page 11: Population Genomics 2: Diversity and Site Frequency Spectrum (SFS) - February 28, 2018
+Goals: 
+* Learn to calculate SNP allele frequencies and diversity metrics with vcftools
+* Learn to subset the vcf file for interesting individuals (or for specific chromosomes or SNP loci)
+* Calculate nucleotide diversity (pi) for each contig
+
+Getting summary stats for downstream analysis and plotting in R
+- We now have a filtered SNP dataset that has high-quality sites in it, so time to look at some different measures of genetic diversity in our sample. 
+- The diverisy of a population primarily reflects its **effective population size (Ne)**
+  + Ne is shaped by many different aspects of species life history and ecology, including sex ratio, generation time, mating system, offspring number, etc
+  +  Also by the populations history, including bottlenetcks and population growth
+- Therefore, looking at the diversity within populations, and comparing to other populations or species, is an important step towards understanding how ecology shapes genomes
+- There are many different ways to loo at the diversity within populations using SNPs: 
+  + Nucleotide diversity (pi): the average number of pairwise differences between all individuals in the population. Equivalent to the expected heterozygosity (2pq) for a bi-allelic locus. 
+  + Allele frequencies (P and q): the frequency of a given SNP. Usually defined in terms of the major and minor alleles at each SNP locus. 
+  + Site Frequency Spectrum (SFS): aka allele frequency spectrum. The histogram of allele frequencies across all SNP loci. Tells how many loci are rare (frequency in population 0-.1) and common (.4-.5). The shape of the SFS has an incredible amount of information about the populations demographic history (ie Ne, size changes) and also selection (purifying and positive selection)
+  
+** Diversity metrics based on subsetting your VCF files**
+- Often useful to subset the total SNP dataset to analyze diversity in different groups
+- To do this, create a separate text file containing a subset of the samples so vcftools can be told how to split things up. 
+Example: compare the SNP frequencies for all loci between our 3 populations. 
+1. Create text files containing the individual ID's for each population separately. Path to the metadata: 
+```
+/data/project_data/beetles.metadata/cols_data.txt
+```
+2. Get just the IT, NC, and WA sample IDs, and remove all but the first column of data
+```
+grep "IT" /data/project_data/beetles/metadata/cols_data.txt | cut -f 1 > IT.inds
+```
+3. Now that individuals are separated out by population, we can call vcftools to calculate alleles frequencies separately for each population (3 separate calls to vcftools)
+```
+vcftools --vcf filename.vcf --freq 2 --keep IT.inds --out IT
+```
+4. Move results files to laptops using WinSCP
+5. Make SFS for the three populations using R
+```
+hist()
+```
+
+**Estimating Onthofagus nucleotide diversity**
+- There are associations between species life history traits and nucleotide diversity
+- pi is proportional to Ne, through the following equation, where 'u' is the per-site mutation rate:
+```
+  -> pi = 4 Ne u
+```  
+- We can use vcftools to calcualte pi for each site, and then aggregate the data per contig in R to get mean values. 
+- Because pi includes both polymorphic and monomorphic sites in the genome, we'll need to use a filtering strategy on our vcf file that includes the non-variable sites
 
 - open samtobam.sh
 - comment out all lines run in previous session
+```
+#samtools depth WA_PP1_M1_bwamem.bam
+
+# fix mate pairs between PE reads that have been orphaned
+#samtools fixmate WA_PP1_M1_bwamem.bam WA_PP1_F1.fixmate.bam
+
+# sort the alignments
+#samtools sort -@ 4 WA_PP1_F1.fixmate.bam WA_PP1_F1.fixmate.sorted.bam
+
+# remove PCR duplicates
+# samtools rmdup WA_PP1_F1.fixmate.sorted.bam WA_PP1_F1.fixmate.sorted.rmdup.bam
+
+# index our final alignment for fast processing
+#samtools index WA_PP1_F1.fixmate.sorted.bam
+
+# pause here: look at the results before proceeding to SNP calling
+
+# here, we're calling SNPs in one individual using the samtools bcftools caller
+bcftools mpileup \
+  -Ou -f /data/project_data/beetles/reference/OTAU.fna \
+  ~/mydata/sam/WA_PP1_F1.fixmate.sorted.bam \
+  --threads 4 --skip-indel --annotate AD,DP | \
+  bcftools call -Ov -mv --format-fields GQ,GP >WA_PP1_M1.vcf
+"samtobam.sh" 34L, 1098C 
+```
 - error: WA_PP1_M1 accidentally renamed to WA_PP1_F1 partway thru script in previous session - fixed here by making bcftools output (when calling SNPs) with correct name
 - | pipeline command in bash that puts output from previous command as input into next
 - / allows splitting of command between multiple lines
@@ -430,7 +575,37 @@ in bash: file saved as samtobam.sh in mydata/sam
  
 ----------
 <div id='id-section12'/>
-### Page 12: Admixture & Population Structure
+### Page 12: Admixture & Population Structure - March 5, 2018
+
+Goals: 
+- Look for evidence of genetic population structure using ADMIXTURE analysis
+- Compare ADMIXTURE results to multivariate ordination techniques such as PCA to detect population structure. 
+
+We'll take 2 different approaches to test if there is any population structure present in our sample. Both analyses are naive with regard to the actual sampling locality of individuals, so they provide a relatively unbiased way of determining if there are actually >1 genetically distinct groups represented in the data. 
+  1. The maximum likelihood ADMIXTURE program to cluster genotypes into K groups, in which we'll vary K from 1-10
+  2. PCA and related analyses on the SNPs to see if they group by population. 
+
+**ADMIXTURE analysis**
+- A common way to estimate population structure or test for mixed ancestry is to use genotypic clustering algorithms
+- These include the familiar program STRUCTURe, as well as many others. All include the common feature of using multi-locus genetic data to estimate: 
+  1. The number of clusters present
+  2. Each individuals proprtion of genetic ancestry in these clusters
+
+- With large population genomic datasets, STRUCTURE would take a prohibitively long time to run, so analyzing thousands of SNPS requires computationally efficient approaches to the clustering problem. A good option is the maximum likelihood program ADMIXTURE by the NOvembre lab. [Here](https://www.genetics.ucla.edu/software/admixture/) is the source page for ADMIXTURE information, and [here](https://www.genetics.ucla.edu/software/admixture/admixture-manual.pdf) is the ADMIXTURE manual. 
+- ADMIXTURE introduces a number of user-defined groups or clusters (K) and uses maximum likelihood to estimate allele frequencies in each cluster, and assign each individual ancestry (Q) to one or more of these clusters. 
+
+To run ADMIXTURE, we need to provide an input file and the requested level of K to investigate. 
+1. Convert vcf >.geno format using PGDSpider, a conversion tool. Requires 4 files: 
+  + The input data file in vcf format (thinned to remove closely linked sites in LD)
+  + A text file with sample IDs and the population designations
+  + A settings file (.spid) that tells PGDSpider how to process the data
+  + A bash script that runs the program with all of the above settings specified. 
+*Files can be accssed here: 
+```
+/data/project_data/beetles/metadata/beetles.pop
+/data/project_data/scripts/beetles.spid
+/data/project_data/scripts/vcf2geno.sh
+```
 
 In server: access data/project_data/beetles/snps
 Use vcftools to analyze vcf files produced by reads2snps
@@ -490,12 +665,22 @@ After filtering, kept 8730 out of a possible 8730 Sites
 Run Time = 0.00 seconds
 
 ```
+
 ------
 <div id='id-section13'/>
-### Page 13: Admixture & Population Structure Continued
+### Page 13: Admixture & Population Structure Continued - March 7, 2018
 
+**Thinning your vcf file for ADMIXTURE**
+- ADMIXTURE assumes SNPs are unlinked, so we first need to thin the data for closely adjacent sites
+- Use the vcftools flag --thin 1000 to thin sites to 1 SNP per kb
+- You should have a file called out.recode.vcf.geno in your directory
+- From within your home directory ~/myscripts/, open vim to create a bash script for running ADMIXTURE at each level of K from 1 to 10. 
+- The cross-validation procedure in ADMIXTURE breaks the samples into n equally sized chunks. It then masks each chunk in turn, trains the model to estimate the allele frequencies and the ancestry assignments on the unmasked data, and then attempts to predict the genotype values for the masked individuals
+- If the model is good, and there is true structure in the data, then a supported value of K will show low CV error. BUT, this does not mean there is only 1 true K value!!
+
+** Notes on implemenation**
 - First, repeat steps from session 12 for NC & WA populations on server
-- Next, load data into new R script (March7_PopGen.R) and calculate SFS for each popualtio
+- Next, load data into new R script (March7_PopGen.R) and calculate SFS for each population
 
 next: 
 - thin vcf file, convert vcf to .geno, write bash script and run admixture
@@ -520,11 +705,24 @@ vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.
 
 ------
 <div id='id-section15'/>
-### Page 15: Admixture & Population Structure Continued
-Goals: 
+### Page 15: Population Genomics 4: Admixture & Population Structure Continued - March 19, 2018
+Goals (finishing up from Day 4): 
 - Plot our ancestry assignments from ADMIXTURE analysis for different levels of K
 - Compare ADMIXTURE results to multivariate ordination techniques such as PCA to detect population structure
 
+In UNIX: 
+1. Convert vcf to .geno format in preparation for ADMIXTURE
+  + edit PGDSpider settings (.spid) files
+  + edit bash script (vcf2geno.sh)
+  + run converstion vcf -> geno
+2. Run ADMIXTURE
+  + Write ADMIX.sh bash script to loop the ADMIXTURE analysis from K=1 to K=10
+  + look at cv values to find evidence for K
+  + download .Q files to local desktop for R-processing
+  + download metadata "cols_data.txt" to local desktop 
+  + download thinned vcf file to local desktop for R-processing
+
+** Notes on implementation**
 1. Move beetle.spid file & beetle.pop file over to ~/myscripts
 2. Check beetle.spid file & vcf2geno.sh file in bash 
 ```
@@ -533,6 +731,15 @@ vim vcf2geno.sh
 ```
 run vcf2geno.sh using bash
 
+```
+vim ADMIX.sh
+
+for K in {1..10}
+do
+admixture -j4 --cv=10 ~/myresults/out.recode.vcf.geno  $K | tee  log${K}.out
+done
+grep "CV" log*out >chooseK.txt
+```
 ```
 bash vcf2geno.sh
 ```
@@ -572,7 +779,14 @@ Choose K values 2-4
 
 NEXT: move .Q files to home computer, start new R script (PopStructureOTAU_DP10GP95.R)
 
-
+** In R on Local Machine**
+1. Plot ADMIXTURE Q-values
+  + use 'pophelper'package to plot ancestry coefficients by population
+  + compare ancestry values across levels of K
+2. Compare ADMIXTURE results to PCA results
+  + Use 'vcfR' to read in vcf file to R
+  + use 'adegenet' to compute PCA on SNP data
+  + How many genetic groups does PCA suggest? Does it agree with ADMIXTURE? 
 
 ------
 <div id='id-section16'/>
@@ -583,18 +797,50 @@ NEXT: move .Q files to home computer, start new R script (PopStructureOTAU_DP10G
 
 - For class analysis: take 10 threads values
 
-
-
-
-
-
-
 ------
 <div id='id-section17'/>
-### Page 17: 
+### Page 17: Population Genomics 7 - Analyzing Fst Outlier (Bayescan) Results - March 26, 2018
 
+Goals
+- Discuss mcmc approach used by Bayescan to estimate model parameters
+- Assess convergence of our mcmc runs in Bayescan and the effects of different thinnning intervals
+- Compare the sensitivity of outlier loci from Bayescan runs assuming different prior odds of selection
+- Annotate our results to determine the functional role of outliers
 
+Plotting and Interpreting Results
+- Bayescan and other evolutionary genetic models have a tough job - trying to estimate complex models with many parameters
+- Often, we don't know what the distribution should look like for these set of parameters, so we approximate the likelihood by sampling the space most consistent with the data. Thats where mcmc comes in - it's a search strategy to for finding regions of high likelihood, and uses this to compute your posterior parameters 
 
+Issues to be aware of when using mcmc programs: 
+1. **Burn-in**: The time before a stable sampling distribution of high likelihood values is reached. The initial start of the chain can bias your estimates if you include these values. People generally discard the first several thousand iterations as "burn-in"
+2. **Thinning**: Saving iterations that are too close together in the chain generates autocorrelation in your estimates, which can bias your parameters
+3. **Convergence**: Is there a trend in the likelihood or parameter values across the length of the chain? Or has it reached a stable convergence of sampling around likely values? 
+
+**Most importantly - do not trust the output of ANY program. You have to look at your data and results to ensure things are OK.**
+
+Hands-on analysis
+Here's what's in these files:
+
+- AccRte.txt: This contains information on the acceptance rate for updates during the mcmc chain.
+- fst.txt: This a row for each SNP site, and contains the probability that it's under selection, the log10
+- Posterior Odds that the locus is selected vs. neutral, the value of alpha, the corresponding qvalue indicating the probability of a false discovery, and lastly, the Fst for that locus
+- .sel: This contains the output from the mcmc chain; can be useful for plotting and ensuring your run converged (look at logL)
+- Verif.txt: This is essentially a log file that contains information on your run and how the commands were interpreted by Bayescan.
+
+**The most important files are the "_fst.txt" with your selection results, and the ".sel" with the info on how the likelihood varied across your run.**
+
+Analysis
+1. Download the "_fst.txt" and the ".sel" files to local machine for plotting in R
+2. Download the SNP ID information (CHROM and POS) so that you can reassociate Go to ~/myresults and analyze .vcf file
+```
+ll *vcf
+
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --kept-sites
+
+```
+output is out.kept.sites, download to home machine
+
+3. Start new R script (~/EcologicalGenomics/PopGenomics/BayescanResults/BayescanAnalysis.R)
 
 
 
