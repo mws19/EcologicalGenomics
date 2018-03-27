@@ -1,0 +1,236 @@
+---
+title: "HW2_ADMIXTURE"
+author: "Morgan Southgate"
+date: "March 24, 2018"
+output: html_document
+---
+For original thinning setting (thin --1000)
+```
+After filtering, kept 72 out of 72 Individuals
+Outputting VCF file...
+After filtering, kept 827 out of a possible 8730 Sites
+Run Time = 0.00 seconds
+
+[msouthga@pbio381 myresults]$ cat chooseK.txt
+log10.out:CV error (K=10): 0.74078
+log1.out:CV error (K=1): 0.44089
+log2.out:CV error (K=2): 0.43635
+log3.out:CV error (K=3): 0.44473
+log4.out:CV error (K=4): 0.47987
+log5.out:CV error (K=5): 0.51791
+log6.out:CV error (K=6): 0.55534
+log7.out:CV error (K=7): 0.58280
+log8.out:CV error (K=8): 0.62599
+log9.out:CV error (K=9): 0.66978
+```
+
+1. Choose a new thinning setting, and create a new vcf file for ADMIXTURE analysis
+  - old setting = 1000, meaning 1 SNP per 1000 kb
+  - change it to thin = 100
+```
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --thin 100 --recode
+
+After filtering, kept 72 out of 72 Individuals
+Outputting VCF file...
+After filtering, kept 3206 out of a possible 8730 Sites
+Run Time = 0.00 seconds
+
+```
+output = out.recode.vcf
+
+2. Convert vcf to geno file using vcf2geno.sh
+```
+bash vcf2geno.sh
+```
+output = out.recode.vcf.geno
+
+3. Run ADMIX.sh (loops the ADMIXTURE analysis from K=1 to K=10)
+
+4. Get CV values for each value of K 
+```
+[msouthga@pbio381 myresults]$ cat chooseK.txt
+log10.out:CV error (K=10): 0.71649
+log1.out:CV error (K=1): 0.44616
+log2.out:CV error (K=2): 0.44000
+log3.out:CV error (K=3): 0.44487
+log4.out:CV error (K=4): 0.48211
+log5.out:CV error (K=5): 0.50542
+log6.out:CV error (K=6): 0.55574
+log7.out:CV error (K=7): 0.57804
+log8.out:CV error (K=8): 0.61460
+log9.out:CV error (K=9): 0.63781
+```
+5. Copy new .Q files to home computer (~/EcologicalGenomics/PopGenomics/HW2/ADMIXTURE)
+
+6. Repeat for thinning value = 10
+```
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --thin 10 --recode
+
+
+Parameters as interpreted:
+        --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf
+        --thin 10
+        --recode
+
+After filtering, kept 72 out of 72 Individuals
+Outputting VCF file...
+After filtering, kept 7227 out of a possible 8730 Sites
+Run Time = 1.00 seconds
+
+```
+- Run vcf2geno.sh
+- Run ADMIX.sh
+
+```
+[msouthga@pbio381 myresults]$ cat chooseK.txt
+log10.out:CV error (K=10): 0.69475
+log1.out:CV error (K=1): 0.44613
+log2.out:CV error (K=2): 0.43955
+log3.out:CV error (K=3): 0.44687
+log4.out:CV error (K=4): 0.48063
+log5.out:CV error (K=5): 0.51545
+log6.out:CV error (K=6): 0.55418
+log7.out:CV error (K=7): 0.57722
+log8.out:CV error (K=8): 0.58902
+log9.out:CV error (K=9): 0.63785
+```
+
+```{r}
+# load pophelper
+library(pophelper)
+
+# set working directory
+setwd("~/EcologicalGenomics/PopGenomics")
+
+# upload .Q files
+admixfiles=list.files(path=("HW2_ADMIXTURE/"),full.names=T)
+admixlist=readQ(files=admixfiles,filetype="basic")
+
+# metadata: sample id and pop from beetle.pop file
+metadata=read.table("cols_data.txt",header=T)
+
+# format metadata to a data frame and ind variables as chars. for plotting
+metadata2=data.frame(sampleid=metadata[,1], population=metadata[,2])
+
+metadata2$sampleid=as.character(metadata2$sampleid)
+metadata2$population=as.character(metadata2$population)
+
+# add in the sample id to the different Q files for plotting
+if(length(unique(sapply(admixlist,nrow)))==1)
+  admixlist <- lapply(admixlist,"rownames<-",metadata2$sampleid)
+
+head(admixlist[[3]])
+
+p <- plotQ(admixlist[c(3,4,5)],
+           returnplot=T,exportplot=T,quiet=T,basesize=11, imgoutput="join", 
+           showyaxis=T, showticks=T, panelspacer=0.4, useindlab=F, showindlab=F, 
+           grplab=metadata2[2], grplabsize=3, linesize=1, barsize=1, pointsize=3, 
+           panelratio=c(4,1), divsize = 0.75, pointcol="white", showtitle=T, 
+           titlelab="ADMIXTURE analysis on O. tauri, SNPs thinned to 1 per 100 bp", 
+           splab=c("K=2","K=3","K=4"), outputfilename="ADMIXTURE_Otauri",
+           imgtype="pdf",height=3,width=25)
+
+plot(p$plot[[1]])
+
+```
+
+```{r}
+# Make a plot of K CV values to determine if three thinning values result in different inferences of K
+
+K <- c(10, 1:9)
+
+#thin 1000
+cv.1000 <- c(0.74078,0.44089, 0.43635, 0.44473, 0.47987, 0.51791, 0.55534, 0.58280,0.62599, 0.66978)
+
+# thin.1000 <- cbind(K,cv.1000)
+# colnames(thin.1000)<- c("K","CV")
+# thin.1000 <- data.frame(thin.1000)
+
+#thin 100
+cv.100 <- c(0.71649, 0.44616, 0.44000, 0.44487, 0.48211, 0.50542, 0.55574, 0.57804, 0.61460, 0.63781)
+
+# thin.100 <- cbind(K,cv.100)
+# colnames(thin.100)<- c("K","CV")
+# thin.100 <- data.frame(thin.100)
+
+# thin 10
+cv.10 <- c( 0.69475,  0.44613,  0.43955,  0.44687, 0.48063, 0.51545,  0.55418,  0.57722,  0.58902, 0.63785)
+
+# thin.10 <- cbind(K,cv.10)
+# colnames(thin.10)<- c("K","CV")
+# thin.10 <- data.frame(thin.10)
+
+# combine into one df
+thin.all <- cbind(K,cv.10, cv.100, cv.1000)
+colnames(thin.all) <- c("K","Thin 10","Thin 100","Thin 1000")
+thin.all <- data.frame(thin.all)
+
+# make plot of CV values 
+library(ggplot2)
+ggplot()+
+  geom_line(data=thin.all, aes(y=Thin.10, x=K, colour="Thin.10"), size=1)+
+  geom_line(data=thin.all, aes(y=Thin.100, x=K, colour="Thin.100"), size=1)+
+  geom_line(data=thin.all, aes(y=Thin.1000, x=K, colour= "Thin.1000"), size=1)+
+  scale_x_continuous(breaks=c(1:10))+
+ scale_color_discrete(name = "Thinning Value", labels = c("Thin.10", "Thin.100", "Thin.1000"))
+
+# p <- ggplot(mapping = aes(x=K, y=CV))
+# p <- p + geom_line(data=thin.10, aes(x= K, y=CV), colour="red")
+# p <- p + geom_line(data=thin.100, aes(x= K, y=CV), colour = "blue")
+# p <- p + geom_line(data=thin.1000, aes(x=K, y=CV), colour="purple")
+# p <- p + scale_x_continuous(breaks=c(1:10))
+# p + scale_color_discrete(name= "Thinning Level", labels = c("10","100","1000"))
+
+```
+
+
+
+
+
+
+
+Part 2: Calculate pi for each population
+- each population is already subset in .inds files in ~/myresults
+
+- Calculate nucleotide diversity for each population (by changing --keep parameter to NC & WA)
+```
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --keep IT.inds --site-pi --out IT
+```
+- Output is site.pi file
+- transfer to local machine using WinSCP, and convert into csv file using excel
+
+```{r}
+
+IT_pi_sites <- read.table("IT.sites.pi.csv", sep=",", header=T,stringsAsFactors = F)
+head(IT_pi_sites)
+
+summary(IT_pi_sites)
+
+pi <- IT_pi_sites$PI
+sd(pi)
+
+```
+
+```{r}
+NC_pi_sites <- read.table("NC.sites.pi.csv", sep=",", header=T,stringsAsFactors = F)
+head(NC_pi_sites)
+
+summary(NC_pi_sites)
+
+pi <- NC_pi_sites$PI
+sd(pi)
+
+```
+
+```{r}
+WA_pi_sites <- read.table("WA.sites.pi.csv", sep=",", header=T,stringsAsFactors = F)
+head(WA_pi_sites)
+
+summary(WA_pi_sites)
+
+pi <- WA_pi_sites$PI
+sd(pi)
+
+```
+
+
