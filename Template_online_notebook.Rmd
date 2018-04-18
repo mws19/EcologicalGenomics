@@ -48,9 +48,9 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 15: 2018-03-19](#id-section15). Admixture & Population Structure Continued
 * [Page 16: 2018-03-21](#id-section16). Testing Selection Using Fst Outlier Analysis
 * [Page 17: 2018-03-26](#id-section17). Population Genomics 7: Analyzing Fst Outlier (Bayescan) results
-* [Page 18:](#id-section18).
-* [Page 19:](#id-section19).
-* [Page 20:](#id-section20).
+* [Page 18: 2018-03-28](#id-section18). Population Genomics 7 Continued
+* [Page 19: 2018-04-16](#id-section19). Work on DemographicHistory Project
+* [Page 20: 2018-04-18](#id-section20). Work on DemHist Project continued.
 * [Page 21:](#id-section21).
 * [Page 22:](#id-section22).
 * [Page 23:](#id-section23).
@@ -843,16 +843,73 @@ output is out.kept.sites, download to home machine
 3. Start new R script (~/EcologicalGenomics/PopGenomics/BayescanResults/BayescanAnalysis.R)
 
 
-
 ------
 <div id='id-section18'/>
-### Page 18:
+### Page 18: Population Genomics 7 Continued
+
+- load in other finished .sel and .fst.txt files from server
+- working in BayescanAnalysis.R
+
+- write list of chromosomes out as .txt file (bayescan_pr10_candsnps.txt) and save in ~/myresults on server
+```
+uniq bayescan_pr10_candsnps.txt > bayescan_pr10_candsnps_unique.txt
+
+ wc bayescan_pr10_candsnps.txt
+  76   76 1140 bayescan_pr10_candsnps.txt
+
+ wc bayescan_pr10_candsnps_unique.txt
+ 46  46 690 bayescan_pr10_candsnps_unique.txt
+
+grep -f ~/myresults/bayescan_pr10_candsnps.unique.txt OTAU.Models.gff3 | grep "gene" >~/myresults/Bayescan_outlier_genes.txt
+```
+
+
 ------
 <div id='id-section19'/>
-### Page 19:
+### Page 19: Work on dem history proj
+
+IN server: access myresults 
+
+# thin filtered vcf file to 1 SNP per 1000 bp
+```
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --thin 1000 --recode
+```
+output: out.log & out.recode.vcf
+
+# now subset by each population
+```
+vcftools --vcf out.recode.vcf --keep IT.inds --recode --out ITdem
+```
+```
+vcftools --vcf out.recode.vcf --keep NC.inds --recode --out NCde
+```
+```
+vcftools --vcf out.recode.vcf --keep WA.inds --recode --out WAdem
+```
+output is (popname)dem.recode.vcf
+
+- made new project folder in /data/project_data/beetles/share/DemHist
+
+- transfer subsetted vcf files to shared DemHist folder 
+cp *dem *vcf /data/project_data/beetles/share/DemHist
+
+- make list file for IT called listfileIT by copying over info from IT.inds filell
+
+- run pl script to convert vcf file to dadi input (data dictionary)
+
+Next: write purl script to convert data dictionary to a frequency spectra (fs)
+
 ------
 <div id='id-section20'/>
-### Page 20:
+### Page 20: 2018-04-18 - Work on Demographic History of Beetles Project
+
+- start from data dictionary (ITdem.recode.vcf.data) and try to convert it to fs using fs_from_data_IT.py -> works but unable to plot using
+
+-use fs.S() to return the number of segregating sites, maximized at projections = 27 (27 individuals???)
+(9486 max number of segregating sites)
+
+- 
+
 ------
 <div id='id-section21'/>
 ### Page 21:
