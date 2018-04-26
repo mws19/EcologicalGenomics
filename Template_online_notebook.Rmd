@@ -51,7 +51,7 @@ Science should be reproducible and one of the best ways to achieve this is by lo
 * [Page 18: 2018-03-28](#id-section18). Population Genomics 7 Continued
 * [Page 19: 2018-04-16](#id-section19). Work on DemographicHistory Project
 * [Page 20: 2018-04-18](#id-section20). Work on DemHist Project continued.
-* [Page 21:](#id-section21).
+* [Page 21: 2018-04-23](#id-section21). Continuing work on DemHist Project. 
 * [Page 22:](#id-section22).
 * [Page 23:](#id-section23).
 * [Page 24:](#id-section24).
@@ -870,11 +870,11 @@ grep -f ~/myresults/bayescan_pr10_candsnps.unique.txt OTAU.Models.gff3 | grep "g
 
 IN server: access myresults 
 
-# thin filtered vcf file to 1 SNP per 1000 bp
+--thin filtered vcf file to 1 SNP per 1000 bp--
 ```
 vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --thin 1000 --recode
 ```
-output: out.log & out.recode.vcf
+--output: out.log & out.recode.vcf
 
 # now subset by each population
 ```
@@ -897,6 +897,7 @@ cp *dem *vcf /data/project_data/beetles/share/DemHist
 
 - run pl script to convert vcf file to dadi input (data dictionary)
 
+
 Next: write purl script to convert data dictionary to a frequency spectra (fs)
 
 ------
@@ -912,10 +913,60 @@ Next: write purl script to convert data dictionary to a frequency spectra (fs)
 
 ------
 <div id='id-section21'/>
-### Page 21:
+### Page 21: April 23, 2018 - Continuing work on DemHist project
+
+Goal: run dadi model for IT population
+
+dadi on server: /data/popgen/dadi_2018
+
+* created fs file for IT called IT.fs using fs.to_file function in fs_from_data_IT.py file
+
+* remove spaces at end of IT listfile and re-run all current analyses
+* stil returns sample size as 27, probably because we specified the projection at 27??? 
+
+* set the points to [50,60,70]
+
+RUNNING FIRST MODEL - Standard neutral model with IT, returned maximum log composite likelihood of 2465.12
+
+```
+./convert_vcf_to_dadi_input.pl
+
+```
+- convert other vcf populations files to dadi input
+```
+perl convert_vcf_to_dadi_input.pl<filename><listfilename>
+```
+
+
 ------
 <div id='id-section22'/>
-### Page 22:
+### Page 22: WOrk on DemHist project continued
+
+
+Move the .vcf files generated to shared folder, delete old ones, renamed to be consistent with what we called them in the scripts (ITdem.recode.vcf)
+- Also deleted all .fs files and .data files to re-run analyses
+
+Re-run conversion for all three populations using convert_vcf_to_dadi_input.pl, output is *popname*dem.recode.vcf.data
+
+- outputted new txt file with loci names containing columns one and 2 - called bayescan_pr10_candsnps2.txt
+
+```
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.vcf --exclude-positions bayescan_pr10_candsnps2.txt --recode --out OTAU_2018_reads2snps_pr10exclude.vcf
+
+```
+
+Then re-run fs_from_data.py scripts for each population
+
+And re-run
+
+FIrst: resubset unthinned vcf files by populations
+```
+vcftools --vcf OTAU_2018_reads2snps_pr10exclude.vcf --keep IT.inds --recode --out ITdem2
+
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.PR_10.vcf --keep NC.inds --recode --out NCdem2
+
+vcftools --vcf OTAU_2018_reads2snps_DP10GP95_biallelic_MAF01_Miss0.8.vcf.recode.PR_10.vcf --keep WA.inds --recode --out WAdem2
+```
 ------
 <div id='id-section23'/>
 ### Page 23:
