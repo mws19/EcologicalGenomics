@@ -1,3 +1,6 @@
+# Morgan -- Nice job on your notebook. Most of your entires are well organized, include helpful annotations to describe what you did and why, and provide the command-line code needed for reproducing your work. Nice job. --Steve
+
+
 ---
 title: "Ecological Genomics Lab Notebook"
 author: "Morgan Southgate"
